@@ -43,6 +43,125 @@ def create_surface(color, width, height):
     surface_.fill(color)
     return surface_
 
+class Player(pygame.sprite.Sprite):
+    # player create
+    def __init__(self, x, y):
+        super().__init__()
+        # my player shape
+        self.image = create_surface(BROWN, 30, 50) 
+        self.rect = self.image.get_rect()
+        self.rect.x = x 
+        self.rect.y = y
+        # jumping velocity  
+        self.velocity_y = 0 
+        # prevents multiple jumps
+        self.jumping = False
+        # direction -1 left & 1 for right
+        self.direction = 1 
+        self.speed = 6
+        self.health = 100
+        self.max_health = 100
+        self.lives = 3
+        self.score = 0
+        self.flip = False 
+        self.shoot_cooldown = 0 
+
+    # update player's state, like movments etc  
+    def update(self): 
+        dx = 0
+        dy = 0
+        # shoot cooldown Decrease 
+        if self.shoot_cooldown > 0:
+            self.shoot_cooldown -= 1
+        
+        key = pygame.key.get_pressed()
+        # horzontal movement control
+        if key[pygame.K_LEFT]:
+            # speed
+            dx = -self.speed
+            # direction
+            self.direction = -1
+            # flip when moving left
+            self.flip = True 
+        if key[pygame.K_RIGHT]:
+            dx = self.speed
+            self.direction = 1
+            # no flip when moving right
+            self.flip = False 
+        
+        # jumping
+        if key[pygame.K_SPACE] and not self.jumping:
+            # upward velocity 
+            self.velocity_y = -15 
+            self.jumping = True
+        
+        # gravity 
+        self.velocity_y += GRAVITY
+        if self.velocity_y > 10: 
+            self.velocity_y = 10
+        dy += self.velocity_y
+
+        #player's position update 
+        self.rect.x += dx
+        self.rect.y += dy
+        
+        # reset jumping stats
+        if self.rect.bottom > GAME_SCREEN_HEIGHT - 50:
+            self.rect.bottom = GAME_SCREEN_HEIGHT - 50
+            self.jumping = False 
+            # no vertical movement
+            self.velocity_y = 0 
+
+    
+       #for firing 
+    def shoot(self):
+
+        if self.shoot_cooldown == 0:
+            # For faster firing cooldown to 5 frames
+            self.shoot_cooldown = 7 
+            # shoot right direction
+            if self.direction == 1:
+                myfire_bullet = movement_handling(self.rect.right, self.rect.centery, self.direction)
+            else:
+                # shoot right direction right
+                myfire_bullet = movement_handling(self.rect.left, self.rect.centery, self.direction)
+            return myfire_bullet
+        return None
+    
+    # health
+    def draw_health(self, world_shift): 
+    #    this is the ration of current health 
+    # and max_health
+        ratio_of_health = self.health / self.max_health
+        # health bar 
+        pygame.draw.rect(screen, RED, (self.rect.x + world_shift, self.rect.y - 11, 30, 5)) # Background (red for lost health)
+        pygame.draw.rect(screen, GREEN, (self.rect.x + world_shift, self.rect.y - 11, 30 * ratio_of_health, 5)) # Foreground (green for current health)
+
+# handle moving of player and enemies.Firings of player
+class movement_handling(pygame.sprite.Sprite):
+    def __init__(self, x, y, direction):
+        super().__init__()
+        # bullet color
+        self.image = create_surface(BLUE, 10, 5) 
+        self.rect = self.image.get_rect()
+        # xcoordinate
+        self.rect.x = x 
+        # ycoordinate
+        self.rect.y = y 
+        # direction to go
+        self.direction = direction 
+        # bullet speed
+        self.speed = 12 
+        # damage to enemies
+        self.damage = 25 
+        
+    def update(self, world_shift): 
+        # Move movement_handling in world coordinates
+        self.rect.x += (self.direction * self.speed) 
+        # check the off-screen
+        if (self.rect.right + world_shift) < 0 or (self.rect.left + world_shift) > GAME_SCREEN_WIDTH:
+            self.kill()
+
 # create enemy , and boss.handle movements, health
 class Game_Enemy(pygame.sprite.Sprite):
 
