@@ -1,6 +1,7 @@
 # image processing
 from PIL import Image, ImageTk
 import cv2
+
 # gui
 import tkinter as tk
 from tkinter import filedialog, ttk
@@ -35,9 +36,6 @@ class My_Image_App:
         
         # Create GUI of app
         self.App_create_widgets()
-
-    # def croping_green_bind():
-    #     return 
         
     def App_create_widgets(self):
         # image display Frame
@@ -174,7 +172,6 @@ class My_Image_App:
         self.cropped_label.image = tk_image
     
     def resize_my_image(self, value):
-        
         try:
             scale = float(value) / 100
             self.resize_value_label.config(text=f"{int(scale*100)}%")
@@ -195,6 +192,7 @@ class My_Image_App:
                 self.cropped_label.image = tk_image
         except Exception as e:
             print(f"Error in resizing my image, please try it again: {e}")
+
     # save my image
     def save_my_image(self):
     
